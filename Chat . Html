@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<title>OS Brain</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    background: #020617;
+    color: #fff;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  header {
+    padding: 14px 16px;
+    border-bottom: 1px solid #1e293b;
+    background: rgba(15,23,42,0.7);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .logo {
+    width: 34px; height: 34px; border-radius: 10px;
+    background: #4f46e5; display: flex; align-items: center; justify-content: center;
+    font-weight: bold; font-size: 15px; box-shadow: 0 0 12px rgba(79,70,229,0.5);
+  }
+  h1 { font-size: 17px; margin: 0; }
+  h1 span { font-size: 10px; color: #818cf8; font-family: monospace; }
+  .modes {
+    background: #1e293b; padding: 4px; border-radius: 12px;
+    display: flex; gap: 4px; border: 1px solid #334155;
+  }
+  .modes button {
+    flex: 1; padding: 9px 6px; border-radius: 8px; border: none;
+    font-size: 12.5px; font-weight: 500; background: transparent; color: #94a3b8;
+  }
+  .modes button.active.web { background: #4f46e5; color: #fff; }
+  .modes button.active.school { background: #059669; color: #fff; }
+  .status-bar {
+    padding: 6px 16px; background: #0f172a; border-bottom: 1px solid #1e293b;
+    font-size: 10.5px; color: #64748b; display: flex; justify-content: space-between; align-items: center;
+  }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+  .status-dot.ok { background: #10b981; }
+  .status-dot.checking { background: #f59e0b; }
+  .status-dot.down { background: #ef4444; }
+  main {
+    flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 12px;
+  }
+  .empty { text-align: center; opacity: 0.6; margin-top: 60px; padding: 0 20px; }
+  .empty h2 { font-size: 18px; }
+  .empty p { font-size: 13px; color: #94a3b8; }
+  .msg-row { display: flex; flex-direction: column; }
+  .msg-row.user { align-items: flex-end; }
+  .msg-row.ai { align-items: flex-start; }
+  .bubble {
+    padding: 12px 14px; border-radius: 16px; max-width: 88%;
+    font-size: 14px; line-height: 1.5; white-space: pre-wrap;
+  }
+  .bubble.user { background: #4f46e5; color: #fff; border-bottom-right-radius: 4px; }
+  .bubble.ai { background: #0f172a; border: 1px solid #1e293b; border-bottom-left-radius: 4px; }
+  .badge {
+    display: inline-block; padding: 2px 8px; font-size: 9px; font-weight: 600;
+    letter-spacing: 0.3px; border-radius: 5px; background: #1e293b; color: #a5b4fc;
+    border: 1px solid #334155; margin-bottom: 6px;
+  }
+  .loading { display: flex; align-items: center; gap: 8px; color: #94a3b8; font-size: 13px; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: #6366f1; animation: pulse 1s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+  footer { padding: 10px; border-top: 1px solid #1e293b; background: rgba(15,23,42,0.7); }
+  .input-row { display: flex; gap: 8px; }
+  .input-row input {
+    flex: 1; background: #020617; border: 1px solid #1e293b; border-radius: 12px;
+    padding: 12px 14px; color: #fff; font-size: 14px;
+  }
+  .input-row button {
+    background: #4f46e5; border: none; border-radius: 12px; padding: 0 18px;
+    color: #fff; font-weight: 500; font-size: 14px;
+  }
+  .input-row button:disabled { opacity: 0.5; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="logo">OS</div>
+    <h1>OS Brain <span>v3.0</span></h1>
+  </div>
+  <div class="modes">
+    <button id="btnWeb" class="active web">🌐 Web Search</button>
+    <button id="btnSchool" class="school">🏫 School Mode</button>
+  </div>
+</header>
+
+<div class="status-bar">
+  <span id="statusText"><span class="status-dot checking"></span>Server check ho raha hai...</span>
+</div>
+
+<main id="chat">
+  <div class="empty" id="emptyState">
+    <h2>OS Brain me aapka swagat hai</h2>
+    <p>Live Google search ke liye Web Search chuno, ya apne school database ke liye School Mode par switch karo.</p>
+  </div>
+</main>
+
+<footer>
+  <div class="input-row">
+    <input id="queryInput" type="text" placeholder="Kuch bhi poochho..." />
+    <button id="sendBtn">Bhejein</button>
+  </div>
+</footer>
+
+<script>
+  let mode = "GLOBAL_WEB";
+  const chatEl = document.getElementById("chat");
+  const emptyState = document.getElementById("emptyState");
+  const queryInput = document.getElementById("queryInput");
+  const sendBtn = document.getElementById("sendBtn");
+  const statusText = document.getElementById("statusText");
+
+  async function checkServer() {
+    statusText.innerHTML = '<span class="status-dot checking"></span>Server check ho raha hai...';
+    try {
+      const res = await fetch("/");
+      if (res.ok) {
+        statusText.innerHTML = '<span class="status-dot ok"></span>Server jaga hua hai';
+      } else { throw new Error("not ok"); }
+    } catch (e) {
+      statusText.innerHTML = '<span class="status-dot down"></span>Sampark me dikkat';
+    }
+  }
+  checkServer();
+
+  document.getElementById("btnWeb").addEventListener("click", () => {
+    mode = "GLOBAL_WEB";
+    document.getElementById("btnWeb").classList.add("active");
+    document.getElementById("btnSchool").classList.remove("active");
+    queryInput.placeholder = "Google se kuch bhi poochho...";
+  });
+  document.getElementById("btnSchool").addEventListener("click", () => {
+    mode = "SCHOOL_KB";
+    document.getElementById("btnSchool").classList.add("active");
+    document.getElementById("btnWeb").classList.remove("active");
+    queryInput.placeholder = "School, students ya teachers ke baare me poochho...";
+  });
+
+  function addMessage(sender, text, badge, sources) {
+    emptyState.style.display = "none";
+    const row = document.createElement("div");
+    row.className = "msg-row " + sender;
+    const bubble = document.createElement("div");
+    bubble.className = "bubble " + sender;
+    if (badge) {
+      const b = document.createElement("span");
+      b.className = "badge";
+      b.textContent = badge;
+      bubble.appendChild(b);
+      bubble.appendChild(document.createElement("br"));
+    }
+    bubble.appendChild(document.createTextNode(text));
+    if (sources && sources.length) {
+      const s = document.createElement("div");
+      s.style.marginTop = "8px";
+      s.style.fontSize = "10.5px";
+      s.style.color = "#94a3b8";
+      s.textContent = "स्रोत: " + sources.join(", ");
+      bubble.appendChild(s);
+    }
+    row.appendChild(bubble);
+    chatEl.appendChild(row);
+    chatEl.scrollTop = chatEl.scrollHeight;
+  }
+
+  function addLoading(msg) {
+    const row = document.createElement("div");
+    row.className = "loading";
+    row.id = "loadingRow";
+    row.innerHTML = '<div class="dot"></div> ' + msg;
+    chatEl.appendChild(row);
+    chatEl.scrollTop = chatEl.scrollHeight;
+  }
+  function removeLoading() {
+    const el = document.getElementById("loadingRow");
+    if (el) el.remove();
+  }
+
+  async function handleSend() {
+    const query = queryInput.value.trim();
+    if (!query) return;
+
+    addMessage("user", query);
+    queryInput.value = "";
+
+    sendBtn.disabled = true;
+    addLoading("OS Brain uttar process kar raha hai...");
+
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query, mode })
+      });
+      if (!response.ok) throw new Error("Server ne status " + response.status + " diya");
+      const data = await response.json();
+      removeLoading();
+      addMessage("ai", data.text, data.badge, data.sources);
+      statusText.innerHTML = '<span class="status-dot ok"></span>Server jaga hua hai';
+    } catch (err) {
+      removeLoading();
+      addMessage("ai", "Server se sampark nahi ho paya: " + err.message, "Error");
+      statusText.innerHTML = '<span class="status-dot down"></span>Sampark me dikkat';
+    } finally {
+      sendBtn.disabled = false;
+    }
+  }
+
+  sendBtn.addEventListener("click", handleSend);
+  queryInput.addEventListener("keydown", (e) => { if (e.key === "Enter") handleSend(); });
+</script>
+
+</body>
+</html>
