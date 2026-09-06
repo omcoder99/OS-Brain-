@@ -1,0 +1,59 @@
+{
+  "school_info": {
+    "name": "PM Shree GSSS Ghantiyali",
+    "leadership": {
+      "principal": "Mangu Mam",
+      "vice_principal": "Iliyas Ji"
+    }
+  },
+  "class_12_science": {
+    "total_students": 13,
+    "breakdown": { "biology": 10, "agriculture": 3 },
+    "gender": { "boys": 2 },
+    "key_students": [
+      {
+        "name": "Lalit",
+        "nickname": "Chimpu Anna",
+        "details": "Class ka sabse energetic aur masti-wala member, hamesha sabko hasata rehta hai."
+      },
+      {
+        "name": "Ramnivash Bishnoi",
+        "nickname": "Shooter",
+        "details": "Class ka full-time entertainer, jahan bhi masti-mazaak chal raha ho wahan zaroor mil jayega."
+      },
+      {
+        "name": "Om Singh",
+        "details": "Simple, shant, ladai aur lafde ke khilaf."
+      },
+      {
+        "name": "Om Perkash",
+        "details": "Class Rank #1 (Hoshiyar). Din bhar school me ghumna, har teacher se daat khana. Mitra: Ghanshyam (Simple, attitude, stylish)."
+      },
+      {
+        "name": "Tilok",
+        "details": "Om Singh ke saath kabhi-kabhi halki nok-jhok ho jaati hai, par overall theek hai."
+      },
+      {
+        "name": "Jagdish",
+        "details": "Honest aur hardworking. Sabka kaam karwane me hamesha aage rehta hai aur teachers ka homework time par karta hai."
+      }
+    ],
+    "faculty": [
+      {
+        "name": "MV Sir",
+        "subjects": ["Chemistry (1st & 3rd Period)", "Biology"],
+        "details": "Full student supporter. Dusre teachers se bacho ko bachane ke liye ladna."
+      },
+      {
+        "name": "Balaram Sir",
+        "subject": "English (6th Period)",
+        "details": "Strict discipline, mazakiya aur witty."
+      },
+      {
+        "name": "Anjena Mam",
+        "subject": "Hindi (4th Period)",
+        "details": "Simple aur polite nature."
+      }
+    ]
+  }
+}
